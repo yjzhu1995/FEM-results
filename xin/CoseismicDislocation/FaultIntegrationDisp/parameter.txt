@@ -1,0 +1,12 @@
+#  depth data file 
+'./greendepth.txt'
+#  data file for epicenter distance of Green's function 
+'./epidist.txt'
+#  list for Green's function files, from up to down u12, u32, u33 and u220
+'./green.txt'
+#  fault slip model data file
+'./fault.dat'
+#  observation coordinates data file
+'./observation point.dat'
+#  numbers of fault superpoistions along the length and width, respectively
+    200    200
