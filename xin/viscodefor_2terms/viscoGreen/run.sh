@@ -1,6 +1,6 @@
 #!/bin/bash
 gfortran *.f90 *.f -fopenmp -llapack -lblas -o omp.out
-fl=(0 10 20 29 35 40 50 60 70 80 90 100)
+fl=(0 10 20 29 35 40 50 60 70 75 80 90 100)
 for item in ${fl[*]}
 do 
 	mkdir GREEN

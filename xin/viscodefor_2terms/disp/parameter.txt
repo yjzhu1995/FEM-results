@@ -9,6 +9,6 @@
 #  observation coordinates data file
 './observation point.dat'
 #  numbers of fault superpoistions along the length and width, respectively
-    100    15
+    200    15
 #  number of snapshot in Green's function data will be computed
     7

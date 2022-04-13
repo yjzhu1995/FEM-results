@@ -220,6 +220,22 @@ end module para
 	end subroutine invfundamatrixT
 ! --------------------------------------------------------
 
+	subroutine fundamatrixAT(mu,N,rr,nm,Yr)
+		integer :: N, nm
+		complex*16 :: mu
+		real*8 :: rr
+		complex*16 :: Yr(nm,nm)
+
+		Yr(1,1) = dcmplx(1.d0/rr)
+		Yr(1,2) = 1/mu
+
+		Yr(2,1) = dcmplx(N-1)*dcmplx(N+2)*mu/rr/rr
+		Yr(2,2) = dcmplx(-3.d0/rr)
+
+	end subroutine fundamatrixAT
+
+! --------------------------------------------------------
+
 	SUBROUTINE sourceS(lambda,mu,N,RAD,S)
 !
 !   spheroidal source function
@@ -273,7 +289,8 @@ end module para
 		real*8 :: dept,RAD
 		complex*16 :: ST(2,2)
 
-	RAD = Re-dept
+! 	RAD = Re-dept
+	RAD = dept
     ST = dcmplx(0.d0,0.d0)
 ! ************************** Strike-slip **********************************
 
@@ -454,7 +471,7 @@ end module para
 ! 	C(1:nm,1:ns) = X(1:nm,1:ns)
 
 ! 	d = matmul(Y,C)
-	LNT(1:ns) = d(1,1:ns)*Re**2
+	LNT(1:ns) = d(1,1:ns)*Re*Re**2
 
     end subroutine LOVET
 
@@ -499,6 +516,43 @@ end module para
 	end subroutine propagation
 
 ! --------------------------------------------------------
+
+	subroutine propagationT(N,nl,nc,y0,mu,r0,r1,y1)
+!  propagate the 2x1 solution from r0 to r1 by using 4th-order Runge-Kutta (RK4) method
+	implicit none
+	integer :: N
+	integer :: nl, nc
+	complex*16 :: mu
+	real*8 :: r0,r1
+	complex*16 :: y0(nl,nc), y1(nl,nc)
+	real*8 :: h    ! step
+	complex*16,dimension(nl,nc) :: k1,k2,k3,k4
+	complex*16 :: f(nl,nl)
+	real*8 :: rt
+
+	h = r1-r0
+	call fundamatrixAT(mu,N,r0,nl,f)
+	k1 = matmul(f,y0)
+	k1 = h*k1
+
+	rt = r0+h/2.d0
+	y1 = y0+k1/2.d0
+	call fundamatrixAT(mu,N,rt,nl,f)
+	k2 = matmul(f,y1)
+	k2 = h*k2
+
+	y1 = y0+k2/2.d0
+	k3 = matmul(f,y1)
+	k3 = h*k3
+
+	y1 = y0+k3
+	call fundamatrixAT(mu,N,r1,nl,f)
+	k4 = matmul(f,y1)
+	k4 = h*k4
+
+	y1 = y0 + (k1+2.d0*k2+2.d0*k3+k4)/6.d0
+
+	end subroutine propagationT
 
 ! --------------------------------------------------------
 
@@ -665,114 +719,224 @@ end module para
 
 ! --------------------------------------------------------
 
-! --------------------------------------------------------
-
-	subroutine COEFFT(nlayer,rlayer,mus,NN,dept,d)
+	subroutine COEFFT(nlayer,rlayer0,mus,NN,dept,d)
+!
+!   solve the boundary value equations
+!
 		use para
 		implicit none
-		INTEGER i,j,k,NN,nds
-		integer,parameter :: nm=2,N=3,nc=1,ns=2
+		integer,parameter :: N=1, nm=2, ns=2
+		integer :: NN,i,j,k,nds
 		integer :: nlayer
-		real*8 :: rlayer(nlayer,2)
-		complex*16 :: mus(nlayer)
-		complex*16 :: mu(nlayer)
-		real*8 :: dept
-		complex*16 :: YT(nm,nm),YT1(nm,nm),YTs1(nm,nm),YTs2(nm,nm),d(nc,ns)
-		complex*16 :: YT_memo(nm,nm),YT2_memo(nm,nm)
-		complex*16 :: A(N,N),B(nm,ns),BB(N,ns),X(N,ns)    ! work array for linear system
-		real*8 :: r1,r2,r_upper
+		real*8 :: rlayer0(nlayer,2),rlayer(nlayer,2)
+		complex*16 :: mus(nlayer),mu(nlayer)
+		real*8 :: dept,rdept
+		complex*16 :: d(N,ns)
+		complex*16 :: Yrs(nm,N),Yrs1(nm,N),Yrs2(nm,ns),Yr1(nm,ns)
+		complex*16 :: Yrs_memo(nm,N), Yrs2_memo(nm,ns)
+		REAL*8 :: r1,r2,rd
 		real*8 :: factor
-		integer :: IPIV(N), info
-		external zgesv
 
+	mu = mus/mus(nlayer)
+	rlayer = 1.d0-rlayer0/Re
+	rdept = 1.d0-dept/Re
 
-	mu = mus/Gpa2pa
-
-	!  at the Earth's surface
-	r1 = Re-rlayer(1,1)
-	call fundamatrixT(mu(1),NN,r1,Re,nm,YT)
-	YT_memo = YT
-
-	!  depth of source
-	!  downward propagate solutions from Earth's surface to the source's depth
-	YTs1 = dcmplx(0.d0,0.d0)
-	do i=1,nm
-		YTs1(i,i) = dcmplx(1.d0,0.d0)
-	end do
-	k = 1
-	do 
-		if(rlayer(k,2)>dept) then
-			r2 = Re-dept
-			nds = k
-			call fundamatrixT(mu(k),NN,r2,Re,nm,YT1)
-			YTs1 = matmul(YT1,YTs1)
-			exit
-		else
-			r2 = Re-rlayer(k,2)
-			call fundamatrixT(mu(k),NN,r2,Re,nm,YT1)
-			YTs1 = matmul(YT1,YTs1)
-		endif
-		if(k==n_obdepth) YT_memo = YTs1
-		k = k+1
-		r1 = Re-rlayer(k,1)     ! upper boundary of each layer
-		call invfundamatrixT(mu(k),NN,r1,Re,nm,YT1)
-		YTs1 = matmul(YT1,YTs1)
-	end do
-
-	!  upward propagate solutions from Earth's inner layer to the source's depth
-	r1 = Re-rlayer(nlayer,1)
-	call fundamatrixT(mu(nlayer),NN,r1,r1,nm,YTs2)
-	YT2_memo = YTs2
 	! locate source layer
 	do k=1,nlayer
-		if(rlayer(k,2)>dept) then
+		if(rlayer0(k,2)>dept) then
 			nds = k
 			exit
 		endif
 	end do
 
+	! initial solution at the Earth's center
+	r1 = Re-rlayer0(nlayer,1)
+	rd = r1/Re
+
+! 	Yrs(1,1) = dcmplx(rd**NN)
+! 	Yrs(2,1) =  mus(nlayer)*dble(NN-1)*rd**NN/r1
+	Yrs(1,1) = dcmplx(1.d0, 0.d0)
+	Yrs(2,1) =  mus(nlayer)*dble(NN-1)/r1
+
+	Yrs(1,1) = Yrs(1,1)/Re
+	Yrs(2,1) = Yrs(2,1)/mus(nlayer)
+
 	factor = 1.d0
-	do k=nlayer-1,nds,-1
-		r2 = Re-rlayer(k,2)
-		if(k==nds) then
-			r_upper = Re-dept
-		else
-			r_upper = Re-rlayer(k,1)
-		endif
-		do while(r2 < r_upper)
-			r1 = min(r2+step,r_upper)
-			call layermatrixT(mu(k),r1,r2,NN,nm,YT1)
-			YT1 = YT1/maxval(dabs(real(YT1)))
-			if(k<=n_obdepth) factor = factor*maxval(dabs(real(YT1)))
-			YTs2 = matmul(YT1,YTs2)
- 			YTs2 = YTs2/maxval(dabs(real(YTs2)))
-			if(k<=n_obdepth) factor = factor*maxval(dabs(real(YTs2)))
+
+	! from Earth's center to surface
+	do k=nlayer-1,n_obdepth+1,-1
+		r2 = rlayer(k,2)
+		do while(r2 < rlayer(k,1))
+			r1 = min(r2+step/Re,rlayer(k,1))
+			call propagationT(NN,nm,N,Yrs,mu(k),r2,r1,Yrs1)
+! 			call lufact(Yrs1)
+! 			Yrs = Yrs1
+			Yrs = Yrs1/maxval(zabs(Yrs1))
 			r2 = r1
 		enddo
-		if(k==n_obdepth+1) YT2_memo = YTs2
+	end do
+	Yrs_memo = Yrs
+	if(n_obdepth>0) then
+		do k=n_obdepth,1,-1
+		r2 = rlayer(k,2)
+		do while(r2 < rlayer(k,1))
+			r1 = min(r2+step/Re,rlayer(k,1))
+			call propagationT(NN,nm,N,Yrs,mu(k),r2,r1,Yrs1)
+! 			call lufact(Yrs1)
+! 			Yrs = Yrs1
+			Yrs = Yrs1/maxval(zabs(Yrs1))
+			factor = factor*maxval(zabs(Yrs1))
+			r2 = r1
+		enddo
+		end do
+	endif
+
+	! from source's depth to surface
+	call sourceT(mu(nds),NN,rdept,Yrs2)
+	Yrs2 = Yrs2/Re**3     ! nondimensionlization
+
+	k = nds
+	r2 = rdept
+	Yrs2_memo = 0.d0
+	do while(r2 < rlayer(k,1))
+		r1 = min(r2+step/Re,rlayer(k,1))
+		call propagationT(NN,nm,ns,Yrs2,mu(k),r2,r1,Yr1)
+! 		call lufact(Yr1)
+! 		Yrs2 = Yr1/maxval(zabs(Yr1))
+		Yrs2 = Yr1
+		r2 = r1
+	enddo
+	if(k==n_obdepth+1) Yrs2_memo = Yrs2
+
+	if(nds/=1) then
+	do k=nds-1,1,-1
+		r2 = rlayer(k,2)
+		do while(r2 < rlayer(k,1))
+			r1 = min(r2+step/Re,rlayer(k,1))
+			call propagationT(NN,nm,ns,Yrs2,mu(k),r2,r1,Yr1)
+! 			call lufact(Yr1)
+! 			Yrs2 = Yr1/maxval(zabs(Yr1))
+			Yrs2 = Yr1
+			r2 = r1
+		enddo
+		if(k==n_obdepth+1) Yrs2_memo = Yrs2
+	end do
+	endif
+
+	do k=1,ns
+		d(1,k) = -Yrs2(2,k)/Yrs(2,1)/factor*Yrs_memo(1,1) + Yrs2_memo(1,k) 
 	end do
 
-	!  construct array
-	A(1,1:nm) = YT(2,1:nm)
-	A(1,N) = dcmplx(0.d0,0.d0)
-	do i=2,N
-		A(i,1:nm) =  YTs1(i-1,1:nm)
-		A(i,N) = -YTs2(i-1,1)
-	enddo
-
-	call sourceT(mu(nds),NN,dept,B)
-	BB(1,1:ns) = dcmplx(0.d0,0.d0)
-	BB(2:N,1:ns) = B(1:nm,1:ns)
-
-	call zgesv(N,ns,A,N,IPIV,BB,N,info)
-	X = BB
-
-	if(dept > rlayer(n_obdepth+1,1)) then
-		d(1,1:ns) = YT_memo(1,1)*X(1,1:ns) + YT_memo(1,2)*X(2,1:ns)
-	else
-		d(1,1:ns) = YT2_memo(1,1)*X(3,1:ns)/factor
-	endif
 	end subroutine COEFFT
+
+! --------------------------------------------------------
+
+! 	subroutine COEFFT(nlayer,rlayer,mus,NN,dept,d)
+! 		use para
+! 		implicit none
+! 		INTEGER i,j,k,NN,nds
+! 		integer,parameter :: nm=2,N=3,nc=1,ns=2
+! 		integer :: nlayer
+! 		real*8 :: rlayer(nlayer,2)
+! 		complex*16 :: mus(nlayer)
+! 		complex*16 :: mu(nlayer)
+! 		real*8 :: dept
+! 		complex*16 :: YT(nm,nm),YT1(nm,nm),YTs1(nm,nm),YTs2(nm,nm),d(nc,ns)
+! 		complex*16 :: YT_memo(nm,nm),YT2_memo(nm,nm)
+! 		complex*16 :: A(N,N),B(nm,ns),BB(N,ns),X(N,ns)    ! work array for linear system
+! 		real*8 :: r1,r2,r_upper
+! 		real*8 :: factor
+! 		integer :: IPIV(N), info
+! 		external zgesv
+
+
+! 	mu = mus/Gpa2pa
+
+! 	!  at the Earth's surface
+! 	r1 = Re-rlayer(1,1)
+! 	call fundamatrixT(mu(1),NN,r1,Re,nm,YT)
+! 	YT_memo = YT
+
+! 	!  depth of source
+! 	!  downward propagate solutions from Earth's surface to the source's depth
+! 	YTs1 = dcmplx(0.d0,0.d0)
+! 	do i=1,nm
+! 		YTs1(i,i) = dcmplx(1.d0,0.d0)
+! 	end do
+! 	k = 1
+! 	do 
+! 		if(rlayer(k,2)>dept) then
+! 			r2 = Re-dept
+! 			nds = k
+! 			call fundamatrixT(mu(k),NN,r2,Re,nm,YT1)
+! 			YTs1 = matmul(YT1,YTs1)
+! 			exit
+! 		else
+! 			r2 = Re-rlayer(k,2)
+! 			call fundamatrixT(mu(k),NN,r2,Re,nm,YT1)
+! 			YTs1 = matmul(YT1,YTs1)
+! 		endif
+! 		if(k==n_obdepth) YT_memo = YTs1
+! 		k = k+1
+! 		r1 = Re-rlayer(k,1)     ! upper boundary of each layer
+! 		call invfundamatrixT(mu(k),NN,r1,Re,nm,YT1)
+! 		YTs1 = matmul(YT1,YTs1)
+! 	end do
+
+! 	!  upward propagate solutions from Earth's inner layer to the source's depth
+! 	r1 = Re-rlayer(nlayer,1)
+! 	call fundamatrixT(mu(nlayer),NN,r1,r1,nm,YTs2)
+! 	YT2_memo = YTs2
+! 	! locate source layer
+! 	do k=1,nlayer
+! 		if(rlayer(k,2)>dept) then
+! 			nds = k
+! 			exit
+! 		endif
+! 	end do
+
+! 	factor = 1.d0
+! 	do k=nlayer-1,nds,-1
+! 		r2 = Re-rlayer(k,2)
+! 		if(k==nds) then
+! 			r_upper = Re-dept
+! 		else
+! 			r_upper = Re-rlayer(k,1)
+! 		endif
+! 		do while(r2 < r_upper)
+! 			r1 = min(r2+step,r_upper)
+! 			call layermatrixT(mu(k),r1,r2,NN,nm,YT1)
+! 			YT1 = YT1/maxval(dabs(real(YT1)))
+! 			if(k<=n_obdepth) factor = factor*maxval(dabs(real(YT1)))
+! 			YTs2 = matmul(YT1,YTs2)
+!  			YTs2 = YTs2/maxval(dabs(real(YTs2)))
+! 			if(k<=n_obdepth) factor = factor*maxval(dabs(real(YTs2)))
+! 			r2 = r1
+! 		enddo
+! 		if(k==n_obdepth+1) YT2_memo = YTs2
+! 	end do
+
+! 	!  construct array
+! 	A(1,1:nm) = YT(2,1:nm)
+! 	A(1,N) = dcmplx(0.d0,0.d0)
+! 	do i=2,N
+! 		A(i,1:nm) =  YTs1(i-1,1:nm)
+! 		A(i,N) = -YTs2(i-1,1)
+! 	enddo
+
+! 	call sourceT(mu(nds),NN,dept,B)
+! 	BB(1,1:ns) = dcmplx(0.d0,0.d0)
+! 	BB(2:N,1:ns) = B(1:nm,1:ns)
+
+! 	call zgesv(N,ns,A,N,IPIV,BB,N,info)
+! 	X = BB
+
+! 	if(dept > rlayer(n_obdepth+1,1)) then
+! 		d(1,1:ns) = YT_memo(1,1)*X(1,1:ns) + YT_memo(1,2)*X(2,1:ns)
+! 	else
+! 		d(1,1:ns) = YT2_memo(1,1)*X(3,1:ns)/factor
+! 	endif
+! 	end subroutine COEFFT
 
 ! --------------------------------------------------------
 

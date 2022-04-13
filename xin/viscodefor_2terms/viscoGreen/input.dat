@@ -5,52 +5,55 @@
 # depth begins from 0.0 and ends with 6371.0
 # if viscosity(Kelvin)=0.0 and viscosity(Maxwell)=0.d0, an elastic bodywill computed and rigid(Kelvin) will be ignored
 # if rigid(Kelvin)=0.0 or viscosity(Kelvin)=0.0, a Maxwell body will computed and viscosity(Kelvin) or rigid(Kelvin) will be ignored
-# depth_upper(km), depth_lower(km), lambda, rigid(Kelvin), rigid(Maxwell), viscosity(Kelvin), viscosity(Maxwell), density,  g
-      0.0            30.0            6.4       0.0              6.4               0.0               0               3037   9.82
-     30.0            70.0            6.4       6.4              6.4             1.e+8           1.e+9               3037   9.83
-     70.0           420.0            6.4       6.4              6.4             1.e+8           1.e+9               3438   9.83
-    420.0          1030.0            6.4       6.4              6.4             1.e+8           1.e+9               3871   9.83
-   1030.0          6371.0            500       0.0              500               0.0               0              10750   9.83
-#   1030.0          6371.0            500       0.0             1.e-11             0.0           1.e-11             10750  9.83
-#      0.0            30.0            6.41      0.0              6.4               0.0             0.0                 0.0
-#     30.0          1030.0            6.41      6.4              6.4             1.e+8           1.e+9                 0.0
-#   1030.0          6371.0            5000     50000            50000              0.0             0.0                 0.0
+# depth_upper(km), depth_lower(km), lambda, rigid(Kelvin), rigid(Maxwell), viscosity(Kelvin), viscosity(Maxwell), density,   g
+     0.000          30.000          6.40     0.00            6.40           0.00000E+00        1.00000E+33        3300    9.8
+    30.000          70.000          6.40     6.40            6.40           1.00000E+08        1.00000E+09        3300    9.8
+    70.000          80.000          6.40     0.00            6.40           0.00000E+00        1.00000E+04        3300    9.8
+    80.000         500.000          6.40     6.40            6.40           1.00000E+08        1.00000E+09        3300    9.8
+   500.000        6371.000       5000.00     0.00         5000.00           0.00000E+00        1.00000E+33        3300    9.8
 # maximum truncated SH degree,  if it is set to 0, the default value will be used
 # 40,000/(elastic layer thickness) is suggested to use; or 40,000/(fault width)*2 for a thrust event with a low dip angle
   1500
 # number of source depths
- 18
+ 19
 # source depths
     0.01
+    0.05
      0.1
+     0.5
      1.0
+     2.0
      3.0
+     4.0
      5.0
+     6.0
      7.0
+     8.0
      9.0
+    10.0
     11.0
+    12.0
     13.0
+    14.0
     15.0
-    17.0
-    20.0
-    22.0
-    25.0
-    27.0
-    30.0
-    32.0
-    35.0
 #
 #  snapshots will be computed, t>=0, in year, t=0 coseismic
 # line 1: number of snapshots
 # line 2, line 3 ... : time
+# 5
+# 3.17e-7
+#  0.5
+#  5.0
+# 50.0
+#	500.0
   7
-  3.17e-7
-  0.49
-  0.50
-  4.99
+ 3.17e-7
+  0.5
+  0.51
   5.00
-  49.9
+  5.01
   50.0
+  50.01
 # number of angles
   165
 # angles
