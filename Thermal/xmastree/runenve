@@ -1,0 +1,17 @@
+#! /bin/bash 
+
+# 5 arguments for cooling: age (yr), half rate, max depth, # of intervals, model type
+../cooling/cooling 10e6 0.04 80 80 1 
+mv temp.dat t.1
+
+# 5 arguments for brittle: name of t-z file, Pf ratio, 0, 0, 80
+utilities/brittle t.1 0.7 0 0 80
+utilities/insert b.1 t.1
+utilities/insert b.2 t.1
+# 2 arguments for ductile: name of t-z file, strain rate
+utilities/ductile t.1 1e-15
+utilities/envelopes b d
+
+#./plstress
+mv bd.1 bds100_15.1
+mv bd.2 bds100_15.2

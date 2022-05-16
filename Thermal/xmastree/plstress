@@ -1,0 +1,15 @@
+#! /bin/bash -f
+
+gmtset LABEL_FONT Helvetica LABEL_FONT_SIZE 12 ANOT_FONT_SIZE 10 VECTOR_SHAPE 0.3 D_FORMAT %1g
+
+psbasemap -JX5/-3 -R-1000/2000/0/75 -Ba1000f200:"Differential Stress (MPa)":/a10f5:"Depth (km)":WsNe -K -P -X2 -Y5 > stress.ps
+
+psxy -JX -R -W2to -K -O << END >> stress.ps
+0  0
+0  100
+END
+#awk '{print -$2,$1}' tbd.1 | psxy -JX -R -W2/red -K -O >> stress.ps
+#awk '{print $2,$1}' tbd.2 | psxy -JX -R -W2/red -K -O >> stress.ps
+awk '{print -$2,$1}' bd.1 | psxy -JX -R -W2ta -K -O >> stress.ps
+awk '{print $2,$1}' bd.2 | psxy -JX -R -W2ta -O >> stress.ps
+

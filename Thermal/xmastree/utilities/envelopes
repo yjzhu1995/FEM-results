@@ -1,0 +1,14 @@
+#! /bin/bash -f
+
+# combine brittle and ductile stress profiles to get strength envelopes
+# $1=generic name of brittle file(extension 1=tension, 2=compression)
+# $2=generic name of ductile files
+# $1$2=generic name of envelope files (extension 1=positive, 2=negative)
+
+utilities/tstrength $1.1 $2.1 t$1$2.1
+utilities/tstrength $1.2 $2.1 t$1$2.2
+utilities/strength $1.1 $2.1 $1$2.1
+utilities/insert $1$2.1 $1.2
+utilities/insert $1$2.1 $2.1
+utilities/strength $1.2 $2.1 $1$2.2
+utilities/insert $1$2.2 $1$2.1

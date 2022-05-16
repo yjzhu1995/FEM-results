@@ -1,0 +1,7 @@
+# GMT common arguments shelf
+-Ba1000f200:Stress (MPa):/a10f5:Depth (km):WSne
+-JX5/-3
+-R-2000/1000/0/75
+-X2
+-Y5
+EOF
