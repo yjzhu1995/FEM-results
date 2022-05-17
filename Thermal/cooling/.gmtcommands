@@ -1,0 +1,9 @@
+# GMT common arguments shelf
+-Ba200f100:Temperature (\312C):/a10f5:Depth (km):WNes
+-JX4/-5
+-R0/1450/0/60
+-X2
+-Y3
+EOF
+EOF
+F

@@ -1,0 +1,20 @@
+#! /bin/csh -f
+
+# red: 207/2/13. dark blue: 0/0/200. light blue: 160/255/255  green: 32/149/27  yellow: 255/255/0  sea: 190/226/249  land: 240/225/180  brown: 187/158/50. orange: 255/200/0
+
+gmtset LABEL_FONT Helvetica LABEL_FONT_SIZE 12 ANOT_FONT_SIZE 10 VECTOR_SHAPE 0.3 D_FORMAT %1g
+
+psbasemap -JX4/-5 -R0/1450/0/75 -Ba200f100:"Temperature (\312C)":/a10f5:"Depth (km)":WNes -P -X2 -K -Y3 > tem.ps
+
+./cooling 20.e6 0.02 95 95 1
+psxy temp.dat -JX -R -: -W3 -K -O >> tem.ps
+
+./cooling 20.e6 0.02 95 95 -1
+psxy temp.dat -JX -R -: -W3/207/2/13 -K -O >> tem.ps
+
+./cooling 100.e6 0.04 95 95 1
+psxy temp.dat -JX -R -: -W3 -K -O >> tem.ps
+
+./cooling 100.e6 0.04 95 95 -1
+psxy temp.dat -JX -R -: -W3/207/2/13 -O >> tem.ps
+
