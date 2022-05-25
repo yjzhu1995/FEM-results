@@ -1,0 +1,23 @@
+#! /bin/bash
+dir=$("pwd")
+cp earth.modelBURG30 earth.model
+nice ./decay4m << ! > /dev/null
+2 1500
+!
+nice ./vsphm << ! > /dev/null
+10.
+!
+
+nice ./decay << ! > /dev/null
+2 1500
+!
+nice ./vtordep << ! > /dev/null
+10.
+!
+for i in 0.5 5 50 500
+do
+
+nice ./strainA < ${dir}/strainx-${i}.inTHRUST > /dev/null
+mv strainA.out ${dir}/strainA-${i}.outTHRUST
+done
+

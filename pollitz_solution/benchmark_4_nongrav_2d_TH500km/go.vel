@@ -1,0 +1,8 @@
+#! /bin/bash
+dir=$("pwd")
+for i in 0.5 5 50 500
+do
+nice ./strainA < ${dir}/strainx-${i}.inTHRUST-vel > /dev/null
+mv strainA.out ${dir}/strainA-${i}.outTHRUST-vel
+done
+sh processvel.sh
