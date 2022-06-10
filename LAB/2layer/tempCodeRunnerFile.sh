@@ -1,0 +1,2 @@
+                        # awk '{print $1+'$year',$'${comp[i-1]}'*1000}' ${xin2}/${sta[j]}_total.ts | gmt plot -W2,red+s 
+                        # awk '{print $1+'$year',$'${comp[i-1]}'*1000}' ${xin3}/${sta[j]}_total.ts | gmt plot -W2,green+s 
