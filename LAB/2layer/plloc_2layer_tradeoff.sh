@@ -1,13 +1,13 @@
 #!/usr/bin/env -S bash -e
 
 export GMT_SESSION_NAME=123	# Set a unique session name
-model=Haida_Gwaii_2layer_E8km_H30kmM1e16
+model=Haida_Gwaii_2layer_E20km_H50kmM1e16
 R=-129/-122/48/51
 J=M3i
 gps=/home1/yzhu/AGU2019/GPS/disp_VI.txt
 xin1=/home1/yzhu/xin_code/2term/${model}/disp/
-xin2=/home1/yzhu/xin_code/2term/Haida_Gwaii_2layer_E15km_H20kmM2e16/disp/
-xin3=/home1/yzhu/xin_code/2term/${model}/disp/
+xin2=/home1/yzhu/xin_code/2term/Haida_Gwaii_2layer_E20km_H100kmM2e16/disp/
+xin3=/home1/yzhu/xin_code/2term/Haida_Gwaii_2layer_E20km_H200kmM4e16/disp/
 arrow=0.2c+ea+h0.25+p1.5p,blue+n30 #0.2c represent arrow length
 arrow1=0.2c+ea+h0.25+p1.5p,black+n30
 arrow2=0.2c+ea+h0.25+p1.5p,red+n30
@@ -35,9 +35,9 @@ gmt begin Quicklook_tradeoff png A+m0.5c
 			# gmt basemap -JM5i -R$R  -Bxa5 -Bya2 -BWSen
 			gmt coast -JM7i -R$R  -Dh -A100 -G244/243/239 -Wthinnest,244/243/239 -S167/194/223   -Bxa5 -Bya2 -BWSen 
 			awk '{print $3,$2,$6,$5,$8,$7,0,$1}' $gps | gmt velo   -JM7i -R$R -Se0.05c/0.95/8 -A$arrow -Gblue -W1,blue
-			# awk '{print $1,$2,$3*1000,$4*1000,0,0,0}' ${xin1}/xin_po8.dis | gmt velo -JM7i -R$R -Se0.05c/1/0 -A$arrow1 -Gblack -W1.5,black
-			awk '{print $1,$2,$3*1000,$4*1000,0,0,0}' ${xin3}/xin_po8.dis | gmt velo -JM7i -R$R -Se0.05c/1/0 -A$arrow2 -Gred -W1.5,red
-			# awk '{print $1,$2,$3*1000,$4*1000,0,0,0}' ${xin3}/xin_po8.dis | gmt velo -JM7i -R$R -Se0.05c/1/0 -A$arrow3 -Ggreen -W1.5,green		
+			awk '{print $1,$2,$3*1000,$4*1000,0,0,0}' ${xin1}/xin_po8.dis | gmt velo -JM7i -R$R -Se0.05c/1/0 -A$arrow1 -Gblack -W1.5,black
+			awk '{print $1,$2,$3*1000,$4*1000,0,0,0}' ${xin2}/xin_po8.dis | gmt velo -JM7i -R$R -Se0.05c/1/0 -A$arrow2 -Gred -W1.5,red
+			awk '{print $1,$2,$3*1000,$4*1000,0,0,0}' ${xin3}/xin_po8.dis | gmt velo -JM7i -R$R -Se0.05c/1/0 -A$arrow3 -Ggreen -W1.5,green		
 			echo "-133 48 10 0 0 0 0" | gmt velo -Se0.1c/1/0 -A$arrow -Gblue -W0.5,blue -JM7i -R$R
 			echo "-132.5 48.5 10 mm" | gmt text  -JM7i -R$R
 		for((i=1;i<3;i++))
@@ -48,9 +48,9 @@ gmt begin Quicklook_tradeoff png A+m0.5c
                 gmt subplot set ${i},${j} -A$name
                         gmt basemap -JX? -R${R2[i-1]} -Bxa5 -B${B[i-1]} -BWSen
                         awk 'NR>1{print $1,$'${gpscomp[i-1]}'}' ${GPSts}/${sta[j]}.txt | gmt plot -Sc0.1c -W1,blue -Gblue
-                        # awk '{print $1+'$year',$'${comp[i-1]}'*1000}' ${xin1}/${sta[j]}_total.ts | gmt plot -W2,black+s 
-                        awk '{print $1+'$year',$'${comp[i-1]}'*1000}' ${xin3}/${sta[j]}_total.ts | gmt plot -W2,red+s 
-                        # awk '{print $1+'$year',$'${comp[i-1]}'*1000}' ${xin3}/${sta[j]}_total.ts | gmt plot -W2,green+s 
+                        awk '{print $1+'$year',$'${comp[i-1]}'*1000}' ${xin1}/${sta[j]}_total.ts | gmt plot -W2,black+s 
+                        awk '{print $1+'$year',$'${comp[i-1]}'*1000}' ${xin2}/${sta[j]}_total.ts | gmt plot -W2,red+s 
+                        awk '{print $1+'$year',$'${comp[i-1]}'*1000}' ${xin3}/${sta[j]}_total.ts | gmt plot -W2,green+s 
             done
         done 
             #awk '{ print $3,$2,$1}'  ssite.txt | gmt text -D-0.5/-0.5+v1p,red
