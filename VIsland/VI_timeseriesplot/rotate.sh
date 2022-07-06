@@ -3,10 +3,11 @@
 sta=(ALBH BAMF BCLC BCMR BCNS BCOV BCPH BCSF BCVC CHWK CLRS ELIZ ESQM GLDR HOLB JORD NANO NTKA PGC5 PTAL PTRF QUAD SC04 TFNO UCLU WILL WOST WSLR)
 n=${#sta[*]}
 
-alon=-122
-alat=48
+alon=-123.429
+alat=48.43
 blon=-128
 blat=51
+
 C=${blon}/${blat}
 E=${alon}/${alat}
 
