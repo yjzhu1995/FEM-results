@@ -10,9 +10,9 @@ blat=51
 
 C=${blon}/${blat}
 E=${alon}/${alat}
-
+pi=3.1415926
 project -C$C -E$E -G10 -Q > projection_trace
-theta=$(echo "$alon $alat $blon $blat" | awk '{print atan2(($3-$1)*cos($2*'$pi'/360+$4*'$pi'/360),$4-$2)}')
+theta=$(echo "$alon $alat $blon $blat" | awk '{print atan2(($1-$3)*cos($2*'$pi'/360+$4*'$pi'/360),$4-$2)}')
 echo "$theta"
 
 for((i=0;i<n;i++))
